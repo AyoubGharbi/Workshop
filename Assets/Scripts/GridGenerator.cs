@@ -17,9 +17,9 @@ public static class GridGenerator
 
         BlockState initialState = BlockState.Left | BlockState.Right | BlockState.Down | BlockState.Up;
 
-        for (int x = 0; x < height; x++)
+        for (int x = 0; x < width; x++)
         {
-            for (int z = 0; z < width; z++)
+            for (int z = 0; z < height; z++)
             {
                 grid[x, z] = initialState;
             }
