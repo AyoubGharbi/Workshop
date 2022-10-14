@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 [Flags]
 public enum BlockState
@@ -15,7 +16,8 @@ public enum BlockState
 
 public static class GridGenerator
 {
-    public static BlockState[,] GenerateGrid(int width, int height)
+    public static async Task<BlockState[,]> GenerateGrid(int width, int height, int animationDelay,
+        CancellationToken cancellationToken, int randomizationSeed)
     {
         BlockState[,] grid = new BlockState[width, height];
 
@@ -29,13 +31,31 @@ public static class GridGenerator
             }
         }
 
-        return GenerateMazeWithBacktracking(grid, width, height);
+        return await GenerateMazeWithBacktracking(grid, width, height, animationDelay, cancellationToken, randomizationSeed);
     }
 
-    public static BlockState[,] GenerateMazeWithBacktracking(BlockState[,] grid, int width, int height)
+    public struct EventGridData
     {
+        public BlockState[,] GridData;
+        public NeighborPosition CurrentPosition;
+
+        public EventGridData(BlockState[,] gridData, NeighborPosition currentPosition)
+        {
+            GridData = gridData;
+            CurrentPosition = currentPosition;
+        }
+    }
+
+    public static Action<EventGridData> OnGridChanged;
+
+    public static async Task<BlockState[,]> GenerateMazeWithBacktracking(BlockState[,] grid, int width, int height,
+        int animationDelay, CancellationToken cancellationToken, int randomizationSeed)
+    {
+        // int randomSeed = UnityEngine.Random.Range(0, int.MaxValue);
+        System.Random randomization = new System.Random(randomizationSeed);
+
         Stack<NeighborPosition> neighborsStack = new Stack<NeighborPosition>();
-        NeighborPosition initPosition = new NeighborPosition(0, 0);
+        NeighborPosition initPosition = new NeighborPosition(randomization.Next(0, width), randomization.Next(0, height));
         neighborsStack.Push(initPosition);
 
         while (neighborsStack.Count > 0)
@@ -51,7 +71,7 @@ public static class GridGenerator
                 if (unExploredNeighbors.Count > 1)
                     neighborsStack.Push(currentPosition);
 
-                int randomNeighborIndex = Random.Range(0, unExploredNeighbors.Count);
+                int randomNeighborIndex = randomization.Next(0, unExploredNeighbors.Count);
                 Neighbor randomNeighbor = unExploredNeighbors[randomNeighborIndex];
 
                 grid[currentPosition.X, currentPosition.Z] &= ~randomNeighbor.sharedBlock;
@@ -61,6 +81,12 @@ public static class GridGenerator
                 grid[randomNeighbor.Position.X, randomNeighbor.Position.Z] |= BlockState.Explored;
 
                 neighborsStack.Push(randomNeighbor.Position);
+
+                OnGridChanged?.Invoke(new EventGridData(grid, randomNeighbor.Position));
+
+                // Debug.Log($"Grid Changed");
+
+                await Task.Delay(animationDelay, cancellationToken);
             }
         }
 

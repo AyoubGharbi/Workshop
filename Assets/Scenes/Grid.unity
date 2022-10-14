@@ -152,6 +152,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24dc1c8d254ddf045b9aeec1ac30cb5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridRandomizationSeed: 6365
+  gridAnimationDelay: 100
   gridWidth: 4
   gridHeight: 4
   cellBlockPrefab: {fileID: 7223395541661396881, guid: c1775883491659e47aeeef0a06ffc884, type: 3}

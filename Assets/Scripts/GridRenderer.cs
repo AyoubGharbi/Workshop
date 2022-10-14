@@ -1,27 +1,59 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class GridRenderer : MonoBehaviour
 {
+    [Range(1, 10000)] [SerializeField] private int gridRandomizationSeed;
+    [Range(100, 5000)] [SerializeField] private int gridAnimationDelay;
     [Range(1, 10)] [SerializeField] private int gridWidth;
     [Range(1, 10)] [SerializeField] private int gridHeight;
     [SerializeField] private GameObject cellBlockPrefab;
 
-    private BlockState[,] _grid;
+    private CancellationToken _cancellationToken;
+    private GridGenerator.NeighborPosition _currentPosition;
+    private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
     private List<Vector3> _gridCellPositions = new List<Vector3>();
     private List<GameObject> _gridCellInstances = new List<GameObject>();
 
-    private void Start()
+    private float CellSize => cellBlockPrefab.transform.localScale.z;
+
+    private void Awake()
     {
-        RenderGrid();
+        _cancellationToken = _cancellationTokenSource.Token;
+        GridGenerator.OnGridChanged += OnGridChanged;
     }
 
-    private void OnValidate()
+    private void OnGridChanged(GridGenerator.EventGridData eventGridData)
     {
-        if (!Application.isPlaying) return;
-
-        RenderGrid();
+        _currentPosition = eventGridData.CurrentPosition;
+        RenderGrid(eventGridData.GridData);
     }
+
+    private async void Start()
+    {
+        EditorRefreshGrid();
+    }
+
+    public async void EditorRefreshGrid()
+    {
+        BlockState[,] initialGrid = await DefineGrid(gridAnimationDelay, _cancellationToken, gridRandomizationSeed);
+        RenderGrid(initialGrid);
+    }
+
+    private void OnDestroy()
+    {
+        _cancellationTokenSource?.Cancel();
+    }
+
+    // private void OnValidate()
+    // {
+    //     if (!Application.isPlaying) return;
+    //
+    //     RenderGrid();
+    // }
 
     private void CleanUp()
     {
@@ -30,21 +62,23 @@ public class GridRenderer : MonoBehaviour
         _gridCellPositions = new List<Vector3>();
     }
 
-    private void RenderGrid()
+    private async Task<BlockState[,]> DefineGrid(int animationDelay, CancellationToken token, int randomizationSeed)
+    {
+        return await GridGenerator.GenerateGrid(gridWidth, gridHeight, animationDelay, token, randomizationSeed);
+    }
+
+    private void RenderGrid(BlockState[,] grid)
     {
         CleanUp();
 
-        _grid = GridGenerator.GenerateGrid(gridWidth, gridHeight);
-
-        float cellSize = cellBlockPrefab.transform.localScale.z;
-        float halfCellSize = cellSize * 0.5f;
+        float halfCellSize = CellSize * 0.5f;
 
         for (int x = 0; x < gridWidth; x++)
         {
             for (int z = 0; z < gridHeight; z++)
             {
-                BlockState gridCellState = _grid[x, z];
-                Vector3 gridCellCenterPos = new Vector3(x * cellSize, 0, z * cellSize);
+                BlockState gridCellState = grid[x, z];
+                Vector3 gridCellCenterPos = new Vector3(x * CellSize, 0, z * CellSize);
 
                 _gridCellPositions.Add(gridCellCenterPos);
 
@@ -94,5 +128,9 @@ public class GridRenderer : MonoBehaviour
         Gizmos.color = Color.magenta;
         foreach (Vector3 gridCellPos in _gridCellPositions)
             Gizmos.DrawWireSphere(gridCellPos, 0.25f);
+
+        Gizmos.color = Color.cyan;
+        Vector3 currentCenterPos = new Vector3(_currentPosition.X * CellSize, 0,  _currentPosition.Z * CellSize);
+        Gizmos.DrawCube(currentCenterPos, Vector3.one * 0.5f);
     }
 }
