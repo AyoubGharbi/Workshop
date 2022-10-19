@@ -152,11 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24dc1c8d254ddf045b9aeec1ac30cb5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridRandomizationSeed: 6470
-  gridAnimationDelay: 1076
-  gridWidth: 4
-  gridHeight: 4
-  cellBlockPrefab: {fileID: 7223395541661396881, guid: c1775883491659e47aeeef0a06ffc884, type: 3}
+  _gridData: {fileID: 11400000, guid: ccbb8573c7527e24d898e2ae51fd4b68, type: 2}
 --- !u!4 &480727552
 Transform:
   m_ObjectHideFlags: 0

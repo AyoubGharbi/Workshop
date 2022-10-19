@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
 
 [Flags]
 public enum BlockState
@@ -16,9 +14,10 @@ public enum BlockState
 
 public static class GridGenerator
 {
-    public static async Task<BlockState[,]> GenerateGrid(int width, int height, int animationDelay,
-        CancellationToken cancellationToken, int randomizationSeed)
+    public static async Task<BlockState[,]> GenerateGrid(GridDataSO gridData)
     {
+        int width = gridData.GridWidth;
+        int height = gridData.GridHeight;
         BlockState[,] grid = new BlockState[width, height];
 
         BlockState initialState = BlockState.Left | BlockState.Right | BlockState.Down | BlockState.Up;
@@ -31,7 +30,7 @@ public static class GridGenerator
             }
         }
 
-        return await GenerateMazeWithBacktracking(grid, width, height, animationDelay, cancellationToken, randomizationSeed);
+        return await GenerateMazeWithBacktracking(grid, gridData);
     }
 
     public struct EventGridData
@@ -48,11 +47,12 @@ public static class GridGenerator
 
     public static Action<EventGridData> OnGridChanged;
 
-    public static async Task<BlockState[,]> GenerateMazeWithBacktracking(BlockState[,] grid, int width, int height,
-        int animationDelay, CancellationToken cancellationToken, int randomizationSeed)
+    public static async Task<BlockState[,]> GenerateMazeWithBacktracking(BlockState[,] grid, GridDataSO gridDataSo)
     {
         // int randomSeed = UnityEngine.Random.Range(0, int.MaxValue);
-        System.Random randomization = new System.Random(randomizationSeed);
+        System.Random randomization = new System.Random(gridDataSo.GridRandomizationSeed);
+        int width = gridDataSo.GridWidth;
+        int height = gridDataSo.GridHeight;
 
         Stack<NeighborPosition> neighborsStack = new Stack<NeighborPosition>();
         NeighborPosition initPosition = new NeighborPosition(randomization.Next(0, width), randomization.Next(0, height));
@@ -86,7 +86,7 @@ public static class GridGenerator
 
                 // Debug.Log($"Grid Changed");
 
-                await Task.Delay(animationDelay, cancellationToken);
+                await Task.Delay(gridDataSo.GridAnimationDelay, gridDataSo.CancellationTokenSource.Token);
             }
         }
 
