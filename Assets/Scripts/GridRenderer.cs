@@ -6,6 +6,7 @@ using UnityEngine;
 public class GridRenderer : MonoBehaviour
 {
     [SerializeField] private GridDataSO _gridData;
+    [SerializeField] private AShortestPathAlgorithm _shortestPathAlgorithm;
 
     private CancellationToken _cancellationToken;
     private GridGenerator.NeighborPosition _currentPosition;

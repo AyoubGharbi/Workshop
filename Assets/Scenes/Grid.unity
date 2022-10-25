@@ -153,6 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _gridData: {fileID: 11400000, guid: ccbb8573c7527e24d898e2ae51fd4b68, type: 2}
+  _shortestPathAlgorithm: {fileID: 11400000, guid: 45812cd2ff2d46648930d11a842ed22b, type: 2}
 --- !u!4 &480727552
 Transform:
   m_ObjectHideFlags: 0

@@ -15,5 +15,5 @@ MonoBehaviour:
   <GridRandomizationSeed>k__BackingField: 353
   <GridAnimationDelay>k__BackingField: 153
   <GridWidth>k__BackingField: 8
-  <GridHeight>k__BackingField: 2
+  <GridHeight>k__BackingField: 5
   <CellBlockPrefab>k__BackingField: {fileID: 7223395541661396881, guid: c1775883491659e47aeeef0a06ffc884, type: 3}
